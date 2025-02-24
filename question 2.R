@@ -24,6 +24,12 @@ biomarker_0weeks <- biomarker_0weeks[biomarker_0weeks$PatientID %in% patient_dat
 patient_data <- patient_data[patient_data$PatientID %in% biomarker_0weeks$PatientID,]
 
 #extract vas at 12 months
-VAS_12Month <- patient_data %>% select(-Vas-12months)
+VAS_12Month <- c(patient_data %>% select(`Vas-12months`))
+patient_data <- patient_data %>% select(-`Vas-12months`)
 
+#remove patient id columns and non-numeric columns
+biomarker_0weeks <- biomarker_0weeks %>% select(-PatientID)
+biomarker_0weeks <- biomarker_0weeks %>% select(-Biomarker)
+patient_data <- patient_data %>% select(-PatientID)
 
+model <- lm(VAS_12Month~patient_data+biomarker_0weeks)
