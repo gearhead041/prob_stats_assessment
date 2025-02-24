@@ -46,11 +46,12 @@ testing_set <- full_data[-training_index,]
 #train model
 model <- lm(`Vas-12months`~.,training_set)
 
-#show residuals
-plot(model$residuals,
-     main="Plot of Residuals",
-     xlab="Index",
-     ylab = "Residuals")
+#show residuals vs fitted
+plot(model$fitted.values, residuals(model), 
+     xlab = "Fitted Values", ylab = "Residuals",
+     main = "Residuals vs Fitted",
+     pch = 20)
+abline(h = 0, col = "red")
 
 #check for normality with histogram
 hist(model$residuals, 
@@ -58,7 +59,7 @@ hist(model$residuals,
      xlab = "Residuals", 
      col = "lightblue", 
      border = "black", 
-     breaks = 20)  
+ )  
 
 #make predictions on test set
 
@@ -71,3 +72,11 @@ plot(predictions, residuals_model,
      ylab = "Residuals", 
      pch = 20, col = "blue")
 abline(h = 0, col = "red", lwd = 2)
+
+#plot histogram for predicted residuals
+hist(residuals_model,
+     main="Histogram of Residuals for Prediction",
+     xlab="Residuals",
+     col = "lightblue", 
+     border = "black",
+   )
