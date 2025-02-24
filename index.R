@@ -7,6 +7,8 @@ library(openxlsx)  # For exporting results
 patient_data <- read_xlsx('./covariates.xlsx')
 biomarker_data <- read_xlsx('./biomarkers.xlsx')
 
+#p-value to be used
+alpha = 0.05 #0.05
 
 #extract male & female
 male_ids <- patient_data$PatientID[patient_data$`Sex (1=male, 2=female)` == 1]
@@ -29,7 +31,12 @@ biomarker_female <- biomarker_0weeks %>%
 #list of biomarker
 biomarkers <- setdiff(names(biomarker_0weeks), c("Biomarker", "PatientID"))
 # Create an empty data frame to store results
-results <- data.frame(Biomarker = character(), p_value = numeric(), Test = character(), stringsAsFactors = FALSE)
+results <- data.frame(
+  Biomarker = character(),
+  p_value = numeric(),
+  Test = character(),
+  stringsAsFactors = FALSE
+)
 
 for (biomarker in biomarkers) {
   male_values <- biomarker_male[[biomarker]]
@@ -43,22 +50,37 @@ for (biomarker in biomarkers) {
     # Choose appropriate t-test
     if (levene_p > 0.05) {
       # Variance is equal → Use Student's t-test
-      t_test <- t.test(male_values, female_values, var.equal = TRUE)
+      t_test <- t.test(
+        male_values,
+        female_values,
+        var.equal = TRUE,
+        conf.level = 1 - alpha
+      )
       test_used <- "Student's t-test"
     } else {
       # Variance is unequal → Use Welch's t-test
-      t_test <- t.test(male_values, female_values, var.equal = FALSE)
+      t_test <- t.test(
+        male_values,
+        female_values,
+        var.equal = FALSE,
+        conf.level =  1 - alpha
+      )
       test_used <- "Welch's t-test"
     }
     
     # Store results
-    results <- rbind(results, data.frame(Biomarker = biomarker, p_value = t_test$p.value, Test = test_used, stringsAsFactors = FALSE))
+    results <- rbind(
+      results,
+      data.frame(
+        Biomarker = biomarker,
+        p_value = t_test$p.value,
+        Test = test_used,
+        Significant = t_test$p.value < alpha,
+        stringsAsFactors = FALSE
+      )
+    )
   }
 }
 
 # Save results to CSV
 write.xlsx(results, "./t_test_results.xlsx", rowNames = FALSE)
-
-
-
-
